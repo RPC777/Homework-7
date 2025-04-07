@@ -22,6 +22,7 @@ head(turnout)
 library(tidyverse)
 library(readr)
 library(ggplot2)
+library(MatchIt)
 
 
 ```
@@ -191,20 +192,22 @@ Part C:
 ```{r}
 library(MatchIt)
 
-matched_turnout <- matchit(GOTV_call ~ voted1996 + AGE + MAJORPTY, 
-                           data = turnout, method = "nearest", 
-                           ratio = 5)
+matched_turnout <- suppressMessages(suppressWarnings(
+  matchit(GOTV_call ~ voted1996 + AGE + MAJORPTY, 
+          data = turnout, method = "nearest", 
+          ratio = 5)
+))
 
 matched_turnout_set <- match.data(matched_turnout)
 
-summary(matched_turnout)
+match_summary <- summary(matched_turnout)
+match_summary$sum.matched
+match_summary$nn
 
 gotv_voted_matched <- matched_turnout_set[matched_turnout_set$GOTV_call == 1, ]
-
 prop_gotv_voted_matched <- mean(gotv_voted_matched$voted1998 == 1)
 
 no_gotv_voted_matched <- matched_turnout_set[matched_turnout_set$GOTV_call == 0, ]
-
 prop_no_gotv_voted_matched <- mean(no_gotv_voted_matched$voted1998 == 1)
 
 n_gotv_matched <- sum(matched_turnout_set$GOTV_call == 1)
@@ -221,6 +224,7 @@ lower_bound_matched <- (p1_matched - p2_matched) - z_score * se_diff_matched
 upper_bound_matched <- (p1_matched - p2_matched) + z_score * se_diff_matched
 
 c(lower_bound_matched, upper_bound_matched)
+
 ```
 
 To better estimate the effect of the GOTV call on the likelihood of voting in 1998, we performed matching with GOTV_call as the treatment variable and voted1996, AGE, and MAJORPTY as the balancing variables. We used a 5:1 matching ratio, pairing each treated individual (those who received a GOTV call) with five controls (those who did not). The balance check showed that the treated and control groups were well-matched on all confounders, with minimal standardized mean differences for voted1996 (0.0000), AGE (0.0021), and MAJORPTY (-0.0142). This indicates that the matching process effectively removed confounding, making the groups comparable. After matching, we calculated the proportions of those who voted in 1998 for each group (GOTV call vs. no GOTV call), and the confidence interval for the difference in these proportions was computed. The results suggest that the GOTV call had a meaningful effect on the likelihood of voting, with a 95% confidence interval for the difference in proportions ranging from 0.143 to 0.264, indicating a statistically significant positive impact of receiving a GOTV call on voting in 1998.
