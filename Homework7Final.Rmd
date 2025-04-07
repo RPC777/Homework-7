@@ -19,7 +19,11 @@ head(armfold)
 library(readr)
 turnout <- read_csv("~/Desktop/SDS 313/turnout.csv")
 head(turnout)
+library(tidyverse)
+library(readr)
 library(ggplot2)
+
+
 ```
 
 <span style="font-family: Arial; font-size: 14pt; color: red;">
@@ -52,8 +56,6 @@ Part C:
 
 ```{r}
 # Load dataset
-library(readr)
-library(ggplot2)
 
 
 
@@ -116,21 +118,17 @@ Question 2:
 <span style="font-family: Arial; font-size: 14pt; color: red;">
 Part A:
 ```{r}
-library(tidyverse)
 
-# Calculate proportions and difference for GOTV and no GOTV voters
 gotv_voted <- turnout[turnout$GOTV_call == 1, ]
 prop_gotv_voted <- mean(gotv_voted$voted1998 == 1)
 no_gotv_voted <- turnout[turnout$GOTV_call == 0, ]
 prop_no_gotv_voted <- mean(no_gotv_voted$voted1998 == 1)
 
-# Sample sizes and counts
 n_gotv <- sum(turnout$GOTV_call == 1)
 n_no_gotv <- sum(turnout$GOTV_call == 0)
 x_gotv <- sum(gotv_voted$voted1998 == 1)
 x_no_gotv <- sum(no_gotv_voted$voted1998 == 1)
 
-# Difference in proportions and Confidence Interval
 p1 <- prop_gotv_voted
 p2 <- prop_no_gotv_voted
 se_diff <- sqrt((p1 * (1 - p1) / n_gotv) + (p2 * (1 - p2) / n_no_gotv))
@@ -138,7 +136,6 @@ z_score <- 1.96
 lower_bound <- (p1 - p2) - z_score * se_diff
 upper_bound <- (p1 - p2) + z_score * se_diff
 
-# Create table with the results
 result_A <- tibble(
   Group = c("GOTV", "No GOTV"),
   Proportion_Voted = c(prop_gotv_voted, prop_no_gotv_voted),
@@ -149,7 +146,9 @@ result_A <- tibble(
   CI_Upper_Bound = upper_bound
 )
 
-print(result_A)
+result_A |>
+  select(Group, Proportion_Voted, Difference_in_Proportions, CI_Lower_Bound, CI_Upper_Bound) |>
+  print(n = Inf)
 
 ```
 
@@ -160,7 +159,7 @@ Part B:
 
 ```{r}
 voted1996_gotv <- turnout |>
-  group_by(voted1996) %>%
+  group_by(voted1996) |>
   summarise(gotv_rate = mean(GOTV_call == 1))
 
 voted1996_gotv
@@ -169,15 +168,15 @@ ggplot(turnout, aes(x = AGE, fill = factor(GOTV_call))) +
   geom_histogram(binwidth = 5, position = "dodge") +
   labs(title = "AGE vs. GOTV Call", x = "Age", fill = "Received GOTV Call")
 
-gotv_majorpty <- turnout %>%
-  group_by(MAJORPTY) %>%
+gotv_majorpty <- turnout |>
+  group_by(MAJORPTY) |>
   summarise(gotv_rate = mean(GOTV_call == 1))
 
 gotv_majorpty
 
 
-gotv_voted1996 <- turnout %>%
-  group_by(voted1996) %>%
+gotv_voted1996 <- turnout |>
+  group_by(voted1996) |>
   summarise(prop_voted = mean(voted1998 == 1))
 
 gotv_voted1996
